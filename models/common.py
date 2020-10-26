@@ -21,6 +21,9 @@ def DWConv(c1, c2, k=1, s=1, act=True):
     return Conv(c1, c2, k, s, g=math.gcd(c1, c2), act=act)
 
 
+# 常用conv block，relu —> nn.Hardswish
+# Hardswish来自paper searching for mobilenetv3，浅层替代swish加速
+# swish：x * sigmoid（x）
 class Conv(nn.Module):
     # Standard convolution
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
