@@ -68,8 +68,8 @@ class BottleneckCSP(nn.Module):
         self.m = nn.Sequential(*[Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)])
 
     def forward(self, x):
-        y1 = self.cv3(self.m(self.cv1(x)))
-        y2 = self.cv2(x)
+        y1 = self.cv3(self.m(self.cv1(x))) # main block
+        y2 = self.cv2(x) # residual
         return self.cv4(self.act(self.bn(torch.cat((y1, y2), dim=1))))
 
 
