@@ -203,11 +203,12 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
     '''
     Args:
         d(dict): the config dict read from yaml
-        ch(int): input channel
+        ch(list[int]): input channel, to append more layer channels
     return:
         nn.Module, the yolo model
     '''
     logger.info('\n%3s%18s%3s%10s  %-40s%-30s' % ('', 'from', 'n', 'params', 'module', 'arguments'))
+    #                        3个          80         0.33                  0.50
     anchors, nc, gd, gw = d['anchors'], d['nc'], d['depth_multiple'], d['width_multiple']
     na = (len(anchors[0]) // 2) if isinstance(anchors, list) else anchors  # number of anchors
     no = na * (nc + 5)  # number of outputs = anchors * (classes + 5)
@@ -220,9 +221,10 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                 args[j] = eval(a) if isinstance(a, str) else a  # eval strings
             except:
                 pass
-
+        # n是多少个conv。
         n = max(round(n * gd), 1) if n > 1 else n  # depth gain
         if m in [Conv, Bottleneck, SPP, DWConv, MixConv2d, Focus, CrossConv, BottleneckCSP, C3]:
+            # ch维护所有的layer channel，所以最后一个永远是最近的上一层，所以f == -1
             c1, c2 = ch[f], args[0]
 
             # Normal
@@ -231,7 +233,8 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
             #     e = math.log(c2 / ch[1]) / math.log(2)
             #     c2 = int(ch[1] * ex ** e)
             # if m != Focus:
-
+            #
+            # 是8的倍数保留，不是增加到最近的一个8的倍数
             c2 = make_divisible(c2 * gw, 8) if c2 != no else c2
 
             # Experimental
@@ -242,10 +245,10 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
             #     c2 = int(ch1 * ex ** e)
             # if m != Focus:
             #     c2 = make_divisible(c2, 8) if c2 != no else c2
-
+            # 输入chan， 输出chan，kernel size，stride
             args = [c1, c2, *args[1:]]
             if m in [BottleneckCSP, C3]:
-                args.insert(2, n)
+                args.insert(2, n)  # 输入chan， 输出chan，n * 0.33, kernel size，stride
                 n = 1
         elif m is nn.BatchNorm2d:
             args = [ch[f]]
