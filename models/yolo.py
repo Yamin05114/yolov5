@@ -64,15 +64,18 @@ class Detect(nn.Module):
 class Model(nn.Module):
     def __init__(self, cfg='yolov5s.yaml', ch=3, nc=None):  # model, input channels, number of classes
         super(Model, self).__init__()
+        # 已经解析
         if isinstance(cfg, dict):
             self.yaml = cfg  # model dict
         else:  # is *.yaml
+            #  yaml需要解析
             import yaml  # for torch hub
             self.yaml_file = Path(cfg).name
             with open(cfg) as f:
                 self.yaml = yaml.load(f, Loader=yaml.FullLoader)  # model dict
 
         # Define model
+        # 类别数，如果输入则覆盖yaml里面的参数
         if nc and nc != self.yaml['nc']:
             print('Overriding model.yaml nc=%g with nc=%g' % (self.yaml['nc'], nc))
             self.yaml['nc'] = nc  # override yaml value
@@ -197,6 +200,13 @@ class Model(nn.Module):
 
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
+    '''
+    Args:
+        d(dict): the config dict read from yaml
+        ch(int): input channel
+    return:
+        nn.Module, the yolo model
+    '''
     logger.info('\n%3s%18s%3s%10s  %-40s%-30s' % ('', 'from', 'n', 'params', 'module', 'arguments'))
     anchors, nc, gd, gw = d['anchors'], d['nc'], d['depth_multiple'], d['width_multiple']
     na = (len(anchors[0]) // 2) if isinstance(anchors, list) else anchors  # number of anchors
@@ -264,7 +274,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='yolov5s.yaml', help='model.yaml')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     opt = parser.parse_args()
-    opt.cfg = check_file(opt.cfg)  # check file
+    opt.cfg = check_file(opt.cfg)  # check file if exist return file if not find the path
     set_logging()
     device = select_device(opt.device)
 
