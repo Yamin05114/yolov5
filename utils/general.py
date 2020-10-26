@@ -127,6 +127,7 @@ def check_anchor_order(m):
         m.anchor_grid[:] = m.anchor_grid.flip(0)
 
 
+# 存在返回不存在寻找
 def check_file(file):
     # Search for file if not found
     if os.path.isfile(file) or file == '':
