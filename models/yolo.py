@@ -208,7 +208,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
         nn.Module, the yolo model
     '''
     logger.info('\n%3s%18s%3s%10s  %-40s%-30s' % ('', 'from', 'n', 'params', 'module', 'arguments'))
-    #                        3个          80         0.33                  0.50
+    #                        3个          80         0.33 csp削减比例         0.50
     anchors, nc, gd, gw = d['anchors'], d['nc'], d['depth_multiple'], d['width_multiple']
     na = (len(anchors[0]) // 2) if isinstance(anchors, list) else anchors  # number of anchors
     no = na * (nc + 5)  # number of outputs = anchors * (classes + 5)
